@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  question-service:
+    build:
+      context: ./question-service
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://host.docker.internal:3306/questiondb
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=5712
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://host.docker.internal:8761/eureka/
+    networks:
+      - spring-network
+
+  quiz-service:
+    build:
+      context: ./quiz-service
+      dockerfile: Dockerfile
+    ports:
+      - "5002:5002"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://host.docker.internal:3306/quizdb
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=5712
+      - QUESTION_SERVICE_URL=http://question-service:5000
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://host.docker.internal:8761/eureka/
+    depends_on:
+      - question-service
+    networks:
+      - spring-network
+
+networks:
+  spring-network:
+    driver: bridge
